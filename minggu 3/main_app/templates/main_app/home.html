@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daftar Laporan</title>
+</head>
+<body>
+    <h1>Daftar Laporan Masalah Kabupaten Tulang Bawang Barat</h1>
+
+    <a href="{% url 'add_report' %}">Tambah Laporan</a>
+
+    <hr>
+
+    {% for report in reports %}
+        <h3>{{ report.title }}</h3>
+        <p><strong>Kategori:</strong> {{ report.category }}</p>
+        <p><strong>Deskripsi:</strong> {{ report.description }}</p>
+        <p><strong>Lokasi:</strong> {{ report.location }}</p>
+        <p><strong>Status:</strong> {{ report.status }}</p>
+        <p><strong>Dibuat:</strong> {{ report.created_at }}</p>
+
+        <a href="{% url 'update_report' report.id %}">Edit</a>
+        <a href="{% url 'delete_report' report.id %}">Hapus</a>
+        <hr>
+    {% empty %}
+        <p>Belum ada laporan.</p>
+    {% endfor %}
+</body>
+</html>
