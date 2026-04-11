@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daftar Laporan</title>
+</head>
+<body>
+    <h1>Daftar Laporan Masalah Kabupaten Tulang Bawang Barat</h1>
+
+    <a href="{% url 'add_report' %}">Tambah Laporan</a>
+
+    <hr>
+
+    {% for report in reports %}
+        <h3>{{ report.title }}</h3>
+        <p><strong>Kategori:</strong> {{ report.category }}</p>
+        <p><strong>Deskripsi:</strong> {{ report.description }}</p>
+        <p><strong>Lokasi:</strong> {{ report.location }}</p>
+        <p><strong>Status:</strong> {{ report.get_status_display }}</p>
+        <p><strong>Dibuat:</strong> {{ report.created_at }}</p>
+
+        <a href="{% url 'report_detail' report.pk %}">Detail</a>
+        <a href="{% url 'update_report' report.pk %}">Edit</a>
+        <a href="{% url 'delete_report' report.pk %}">Hapus</a>
+
+        <br><br>
+
+        {% if report.status == 'REPORTED' %}
+            <form method="POST" action="{% url 'update_status' report.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="VERIFIED">
+                <button type="submit">Ubah ke Verified</button>
+            </form>
+
+        {% elif report.status == 'VERIFIED' %}
+            <form method="POST" action="{% url 'update_status' report.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="IN_PROGRESS">
+                <button type="submit">Ubah ke In Progress</button>
+            </form>
+
+        {% elif report.status == 'IN_PROGRESS' %}
+            <form method="POST" action="{% url 'update_status' report.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="RESOLVED">
+                <button type="submit">Ubah ke Resolved</button>
+            </form>
+
+        {% elif report.status == 'RESOLVED' %}
+            <p><em>Laporan sudah selesai.</em></p>
+        {% endif %}
+
+        <hr>
+    {% empty %}
+        <p>Belum ada laporan.</p>
+    {% endfor %}
+</body>
+</html>
