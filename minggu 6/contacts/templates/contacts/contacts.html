@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact - Smart City Tubaba{% endblock %}
+
+{% block page_title %}Kontak{% endblock %}
+
+{% block page_subtitle %}
+Informasi kontak terkait layanan Smart City Issue Reporting Kabupaten Tulang Bawang Barat.
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Contact</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2 class="fw-bold mb-3">Hubungi Kami</h2>
+    <p class="text-muted mx-auto" style="max-width: 700px;">
+        Jika Anda membutuhkan informasi lebih lanjut terkait layanan Smart City Tubaba,
+        silakan hubungi pengelola melalui kontak resmi berikut.
+    </p>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card-body p-4">
+                <div class="text-primary fs-1 mb-3">
+                    <i class="bi bi-envelope-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Email</h4>
+                <p class="text-muted mb-0">smartcity@tubaba.go.id</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card-body p-4">
+                <div class="text-success fs-1 mb-3">
+                    <i class="bi bi-telephone-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Telepon</h4>
+                <p class="text-muted mb-0">(0728) 123456</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card-body p-4">
+                <div class="text-danger fs-1 mb-3">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Alamat</h4>
+                <p class="text-muted mb-0">Kabupaten Tulang Bawang Barat, Lampung</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="text-muted text-center mt-4 mb-0">
+    Informasi kontak ini ditampilkan sebagai contoh untuk kebutuhan pengembangan aplikasi.
+</p>
+{% endblock %}

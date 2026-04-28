@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Laporan - Smart City Tubaba{% endblock %}
+{% block page_title %}Daftar Laporan{% endblock %}
+{% block page_subtitle %}
+Pantau dan kelola laporan masyarakat Kabupaten Tulang Bawang Barat secara terstruktur.
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Reports</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="h4 mb-1">Data Laporan Masalah</h2>
+        <p class="text-muted mb-0">Daftar laporan yang masuk dari masyarakat.</p>
+    </div>
+
+    {% if user.is_authenticated and user.is_admin %}
+    <a href="{% url 'add_report' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Tambah Laporan
+    </a>
+    {% endif %}
+</div>
+
+{% if reports %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary">
+                <tr class="text-center">
+                    <th>No</th>
+                    <th>Judul</th>
+                    <th>Lokasi</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ report.title }}</div>
+                        <small class="text-muted">{{ report.category }}</small>
+                    </td>
+                    <td>{{ report.location }}</td>
+                    <td class="text-center">
+                        {% if report.status == 'REPORTED' %}
+                            <span class="badge bg-secondary">Reported</span>
+                        {% elif report.status == 'VERIFIED' %}
+                            <span class="badge bg-info text-dark">Verified</span>
+                        {% elif report.status == 'IN_PROGRESS' %}
+                            <span class="badge bg-warning text-dark">In Progress</span>
+                        {% elif report.status == 'RESOLVED' %}
+                            <span class="badge bg-success">Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
+
+                            {% if user.is_authenticated and user.is_admin %}
+                                <a href="{% url 'update_report' report.pk %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+
+                                <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </a>
+
+                                {% if report.status == 'REPORTED' %}
+                                    <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="VERIFIED">
+                                        <button type="submit" class="btn btn-sm btn-info"
+                                                onclick="return confirm('Yakin ingin mengubah status menjadi Verified?')">
+                                            Verified
+                                        </button>
+                                    </form>
+                                {% elif report.status == 'VERIFIED' %}
+                                    <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="IN_PROGRESS">
+                                        <button type="submit" class="btn btn-sm btn-warning"
+                                                onclick="return confirm('Yakin ingin mengubah status menjadi In Progress?')">
+                                            In Progress
+                                        </button>
+                                    </form>
+                                {% elif report.status == 'IN_PROGRESS' %}
+                                    <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="RESOLVED">
+                                        <button type="submit" class="btn btn-sm btn-success"
+                                                onclick="return confirm('Yakin ingin mengubah status menjadi Resolved?')">
+                                            Resolved
+                                        </button>
+                                    </form>
+                                {% elif report.status == 'RESOLVED' %}
+                                    <span class="text-success fw-semibold">
+                                        <i class="bi bi-check-circle-fill"></i> Selesai
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox display-4 text-muted"></i>
+        <h3 class="mt-3">Belum ada laporan</h3>
+        <p class="text-muted">Silakan tambahkan laporan baru untuk mulai mendata permasalahan.</p>
+
+        {% if user.is_authenticated and user.is_admin %}
+        <a href="{% url 'add_report' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Tambah Laporan
+        </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
