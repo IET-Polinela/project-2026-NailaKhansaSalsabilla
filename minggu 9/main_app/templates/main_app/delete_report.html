@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Hapus Laporan - Smart City Tubaba{% endblock %}
+{% block page_title %}Hapus Laporan{% endblock %}
+{% block page_subtitle %}
+Konfirmasi penghapusan data laporan masyarakat Kabupaten Tulang Bawang Barat.
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'report_list' %}">Reports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Hapus Laporan</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="border rounded-4 p-4 bg-light">
+            <h2 class="h4 text-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Konfirmasi Hapus
+            </h2>
+
+            <p class="mb-2">Apakah Anda yakin ingin menghapus laporan berikut?</p>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">{{ report.title }}</h5>
+                    <p class="mb-1"><strong>Kategori:</strong> {{ report.category }}</p>
+                    <p class="mb-1"><strong>Lokasi:</strong> {{ report.location }}</p>
+                    <p class="mb-0"><strong>Status:</strong> {{ report.get_status_display }}</p>
+                </div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Ya, Hapus
+                    </button>
+                    <a href="{% url 'report_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Batal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
