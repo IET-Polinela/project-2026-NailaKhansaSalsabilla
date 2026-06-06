@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Smart City Tubaba{% endblock %}
+{% block page_title %}Registrasi Citizen{% endblock %}
+{% block page_subtitle %}Buat akun citizen untuk melihat dan mengakses sistem pelaporan.{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-4">
+                    <i class="bi bi-person-plus-fill me-2"></i>Register
+                </h3>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Password</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password2" class="form-label">Konfirmasi Password</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-check-fill me-1"></i> Daftar
+                        </button>
+                    </div>
+                </form>
+
+                <p class="text-center mt-3 mb-0">
+                    Sudah punya akun?
+                    <a href="{% url 'login' %}">Login di sini</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
