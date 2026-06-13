@@ -7,6 +7,17 @@ function getAccessToken() {
     return localStorage.getItem("access_token");
 }
 
+function getCurrentUsername() {
+    return (localStorage.getItem("username") || "").toLowerCase();
+}
+
+function isAdminAccountInSPA() {
+    const username = getCurrentUsername();
+    const role = (localStorage.getItem("role") || localStorage.getItem("user_role") || "").toLowerCase();
+
+    return role === "admin" || username === "admin" || username === "khansa" || username === "min";
+}
+
 function escapeHTML(value) {
     return String(value ?? "-")
         .replaceAll("&", "&amp;")
@@ -97,15 +108,21 @@ function renderLoginPage() {
     `;
 }
 
+function renderCreateReportButton() {
+    return `
+        <div class="side-card p-4 mb-4">
+            <button class="btn btn-primary w-100 create-button" onclick="openCreateModal()">
+                <i class="bi bi-plus-circle me-2"></i>Buat<br>Laporan<br>Baru
+            </button>
+        </div>
+    `;
+}
+
 function renderDashboardPage() {
     return `
         <div class="row g-4">
             <aside class="col-12 col-lg-2">
-                <div class="side-card p-4 mb-4">
-                    <button class="btn btn-primary w-100 create-button" onclick="openCreateModal()">
-                        <i class="bi bi-plus-circle me-2"></i>Buat<br>Laporan<br>Baru
-                    </button>
-                </div>
+                ${renderCreateReportButton()}
 
                 <div class="side-card p-4">
                     <h5 class="status-title mb-3">
@@ -241,6 +258,8 @@ async function loadDashboardData(tab = currentTab, page = currentPage) {
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             localStorage.removeItem("username");
+            localStorage.removeItem("role");
+            localStorage.removeItem("user_role");
             handleRoute();
             return;
         }
@@ -277,7 +296,7 @@ function renderList(reports, tab) {
 
 function renderReportCard(report, tab) {
     const progress = getProgressInfo(report.status);
-    const canManageDraft = tab === "my_reports" && report.status === "DRAFT" && report.is_owner === true;
+    const canManageDraft = !isAdminAccountInSPA() && tab === "my_reports" && report.status === "DRAFT" && report.is_owner === true;
 
     return `
         <div class="col-12 col-xl-6">
@@ -399,6 +418,11 @@ async function loadSummaryStats() {
 }
 
 function openCreateModal() {
+    if (isAdminAccountInSPA()) {
+        alert("Admin tidak diperbolehkan membuat laporan");
+        return;
+    }
+
     const reportForm = document.getElementById("reportForm");
     const reportModalTitle = document.getElementById("reportModalTitle");
     const modalElement = document.getElementById("reportModal");
@@ -411,6 +435,11 @@ function openCreateModal() {
 }
 
 async function editDraft(id) {
+    if (isAdminAccountInSPA()) {
+        alert("Admin tidak dapat mengedit draft citizen.");
+        return;
+    }
+
     try {
         const response = await requestAPI(`/api/report/${id}/`, "GET");
         const report = response.data;
@@ -445,6 +474,11 @@ function getReportPayload(targetStatus) {
 }
 
 async function submitModalForm(targetStatus) {
+    if (isAdminAccountInSPA()) {
+        alert("Admin tidak diperbolehkan membuat laporan");
+        return;
+    }
+
     const reportForm = document.getElementById("reportForm");
 
     if (!reportForm.checkValidity()) {
@@ -471,6 +505,11 @@ async function submitModalForm(targetStatus) {
 }
 
 async function deleteReport(id) {
+    if (isAdminAccountInSPA()) {
+        alert("Admin tidak dapat menghapus draft citizen.");
+        return;
+    }
+
     if (!confirm("Yakin ingin menghapus draft ini?")) {
         return;
     }
@@ -484,6 +523,11 @@ async function deleteReport(id) {
 }
 
 async function submitDraft(id) {
+    if (isAdminAccountInSPA()) {
+        alert("Admin tidak dapat mengirim draft citizen.");
+        return;
+    }
+
     if (!confirm("Yakin ingin mengirim draft ini? Setelah dikirim, laporan tidak dapat diedit sebagai draft.")) {
         return;
     }
