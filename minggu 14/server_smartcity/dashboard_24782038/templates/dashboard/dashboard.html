@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'landing' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Dashboard
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+        <h2 class="section-heading mb-1">Dashboard Statistik Laporan</h2>
+        <p class="text-muted mb-0">Ringkasan status dan kategori laporan untuk pemantauan admin.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <span class="icon-chip mb-3">
+                    <i class="bi bi-files"></i>
+                </span>
+                <h6 class="text-muted">Total Laporan</h6>
+                <h3 id="totalReports" class="fw-bold">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <span class="icon-chip mb-3">
+                    <i class="bi bi-send"></i>
+                </span>
+                <h6 class="text-muted">Reported</h6>
+                <h3 id="reportedCount" class="fw-bold text-secondary">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <span class="icon-chip mb-3">
+                    <i class="bi bi-patch-check"></i>
+                </span>
+                <h6 class="text-muted">Verified</h6>
+                <h3 id="verifiedCount" class="fw-bold text-primary">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <span class="icon-chip mb-3">
+                    <i class="bi bi-hourglass-split"></i>
+                </span>
+                <h6 class="text-muted">In Progress</h6>
+                <h3 id="progressCount" class="fw-bold text-warning">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <span class="icon-chip mb-3">
+                    <i class="bi bi-check2-circle"></i>
+                </span>
+                <h6 class="text-muted">Resolved</h6>
+                <h3 id="resolvedCount" class="fw-bold text-success">0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Distribusi Status Laporan</h5>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Distribusi Kategori Laporan</h5>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="fw-bold">5 Laporan Terbaru - REPORTED</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportedTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="fw-bold">5 Laporan Terbaru - RESOLVED</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resolvedTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch('/dashboard/data/')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data JSON dashboard:', data);
+
+            document.getElementById('totalReports').innerText = data.total_reports;
+            document.getElementById('reportedCount').innerText = data.reported_count;
+            document.getElementById('verifiedCount').innerText = data.verified_count;
+            document.getElementById('progressCount').innerText = data.in_progress_count;
+            document.getElementById('resolvedCount').innerText = data.resolved_count;
+
+            const statusLabels = data.status_data.map(item => item.status);
+            const statusTotals = data.status_data.map(item => item.total);
+
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        label: 'Jumlah Status',
+                        data: statusTotals,
+                        backgroundColor: [
+                            '#0f5b8d',
+                            '#157f72',
+                            '#d9922e',
+                            '#c2413a',
+                            '#667085'
+                        ],
+                        borderWidth: 0
+                    }]
+                }
+            });
+
+            const categoryLabels = data.category_data.map(item => item.category);
+            const categoryTotals = data.category_data.map(item => item.total);
+
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Jumlah Kategori',
+                        data: categoryTotals,
+                        backgroundColor: '#0f5b8d',
+                        borderRadius: 8
+                    }]
+                }
+            });
+
+            const reportedTable = document.getElementById('reportedTable');
+            reportedTable.innerHTML = '';
+
+            data.latest_reported.forEach(report => {
+                reportedTable.innerHTML += `
+                    <tr>
+                        <td>${report.title}</td>
+                        <td>${report.category}</td>
+                        <td><span class="badge bg-secondary">${report.status}</span></td>
+                    </tr>
+                `;
+            });
+
+            const resolvedTable = document.getElementById('resolvedTable');
+            resolvedTable.innerHTML = '';
+
+            data.latest_resolved.forEach(report => {
+                resolvedTable.innerHTML += `
+                    <tr>
+                        <td>${report.title}</td>
+                        <td>${report.category}</td>
+                        <td><span class="badge bg-success">${report.status}</span></td>
+                    </tr>
+                `;
+            });
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}About - Smart City Tubaba{% endblock %}
+
+{% block page_title %}Tentang Aplikasi{% endblock %}
+
+{% block page_subtitle %}
+Informasi mengenai aplikasi Smart City Issue Reporting Kabupaten Tulang Bawang Barat.
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">About</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 p-lg-5">
+                <span class="badge bg-primary mb-3">Smart City Tubaba</span>
+                <h2 class="fw-bold mb-3">Tentang Kabupaten Tulang Bawang Barat</h2>
+                <p class="text-muted">
+                    Smart City Issue Reporting adalah aplikasi pelaporan permasalahan masyarakat
+                    yang dirancang untuk mendukung pelayanan publik di Kabupaten Tulang Bawang Barat.
+                </p>
+                <p>
+                    Melalui aplikasi ini, laporan masyarakat dapat dicatat, dipantau, dan diproses
+                    secara terstruktur sehingga memudahkan pengelolaan informasi dan mendukung
+                    pelayanan yang lebih responsif.
+                </p>
+                <p class="mb-0">
+                    Tujuan utama aplikasi ini adalah membantu pengelolaan laporan masyarakat secara
+                    lebih rapi, transparan, modern, dan mudah dipahami oleh pengguna.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-body p-4 p-lg-5">
+                <h3 class="fw-bold mb-4">Keunggulan Layanan</h3>
+
+                <div class="d-flex align-items-start mb-4">
+                    <div class="me-3 text-primary fs-4">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Pelaporan lebih mudah</h6>
+                        <p class="text-muted mb-0">Masyarakat dapat menyampaikan laporan dengan lebih praktis.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start mb-4">
+                    <div class="me-3 text-success fs-4">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Data lebih rapi</h6>
+                        <p class="text-muted mb-0">Seluruh laporan tersusun lebih terstruktur dan mudah dikelola.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start mb-4">
+                    <div class="me-3 text-warning fs-4">
+                        <i class="bi bi-phone-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Responsif di berbagai perangkat</h6>
+                        <p class="text-muted mb-0">Tampilan aplikasi tetap nyaman di desktop maupun mobile.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start">
+                    <div class="me-3 text-info fs-4">
+                        <i class="bi bi-building-fill-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Mendukung pelayanan publik digital</h6>
+                        <p class="text-muted mb-0">Membantu transformasi pelayanan publik yang lebih modern.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

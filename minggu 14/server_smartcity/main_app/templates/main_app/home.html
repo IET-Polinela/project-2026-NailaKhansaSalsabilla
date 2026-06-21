@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Smart City Tubaba{% endblock %}
+
+{% block page_title %}Selamat Datang di Smart City Tubaba{% endblock %}
+
+{% block page_subtitle %}
+Platform pelaporan digital untuk mendukung pelayanan publik Kabupaten Tulang Bawang Barat.
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Home</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5">
+                <h2 class="display-6 fw-bold mb-3">Kabupaten Tulang Bawang Barat</h2>
+                <p class="lead text-muted mb-4">
+                    Smart City Tubaba merupakan aplikasi pelaporan masalah masyarakat yang dirancang
+                    untuk membantu warga menyampaikan keluhan dan mendukung pelayanan publik yang
+                    lebih cepat, rapi, dan transparan.
+                </p>
+                <p class="mb-4">
+                    Aplikasi ini menjadi sarana digital untuk mencatat berbagai permasalahan
+                    masyarakat di wilayah Kabupaten Tulang Bawang Barat secara lebih terstruktur.
+                </p>
+
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'report_list' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-clipboard-data me-1"></i> Lihat Daftar Laporan
+                    </a>
+                    <a href="{% url 'add_report' %}" class="btn btn-success btn-lg">
+                        <i class="bi bi-plus-circle me-1"></i> Buat Laporan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

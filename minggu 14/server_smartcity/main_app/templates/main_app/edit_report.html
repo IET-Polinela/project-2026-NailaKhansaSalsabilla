@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Laporan{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'report_list' %}">Reports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Laporan</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <span class="icon-chip bg-warning-subtle text-warning">
+                <i class="bi bi-pencil-square"></i>
+            </span>
+            <div>
+                <h2 class="section-heading h4 mb-1">Edit Laporan</h2>
+                <p class="text-muted mb-0">Perbarui informasi laporan tanpa mengubah alur data.</p>
+            </div>
+        </div>
+
+        <form method="post" class="loading-form">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="id_title" class="form-label">Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_category" class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_description" class="form-label">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_location" class="form-label">Location</label>
+                {{ form.location }}
+            </div>
+
+            <button type="submit" class="btn btn-warning text-dark loading-btn">
+                <i class="bi bi-save me-1"></i> Update
+            </button>
+            <a href="{% url 'report_list' %}" class="btn btn-outline-secondary">Kembali</a>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("input, textarea, select").forEach(el => {
+        el.classList.add("form-control");
+    });
+});
+</script>
+{% endblock %}

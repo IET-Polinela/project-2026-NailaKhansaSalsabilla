@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Smart City Tubaba{% endblock %}
+
+{% block page_title %}Dashboard Statistik{% endblock %}
+
+{% block page_subtitle %}
+Ringkasan visual laporan masyarakat Smart City Tubaba.
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white fw-semibold">
+                Distribusi Status Laporan
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white fw-semibold">
+                Distribusi Kategori Laporan
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-secondary text-white fw-semibold">
+                5 Laporan Terbaru Berstatus Reported
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Lokasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportedTable">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white fw-semibold">
+                5 Laporan Terbaru Berstatus Resolved
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Lokasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resolvedTable">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch("{% url 'dashboard_data' %}")
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data JSON Dashboard:", data);
+
+            const statusCtx = document.getElementById('statusChart');
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.status_labels,
+                    datasets: [{
+                        label: 'Jumlah Laporan',
+                        data: data.status_counts
+                    }]
+                }
+            });
+
+            const categoryCtx = document.getElementById('categoryChart');
+
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.category_labels,
+                    datasets: [{
+                        label: 'Jumlah Laporan per Kategori',
+                        data: data.category_counts
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const reportedTable = document.getElementById('reportedTable');
+            reportedTable.innerHTML = '';
+
+            data.latest_reported.forEach(report => {
+                reportedTable.innerHTML += `
+                    <tr>
+                        <td>${report.title}</td>
+                        <td>${report.category}</td>
+                        <td>${report.location}</td>
+                    </tr>
+                `;
+            });
+
+            const resolvedTable = document.getElementById('resolvedTable');
+            resolvedTable.innerHTML = '';
+
+            data.latest_resolved.forEach(report => {
+                resolvedTable.innerHTML += `
+                    <tr>
+                        <td>${report.title}</td>
+                        <td>${report.category}</td>
+                        <td>${report.location}</td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(error => {
+            console.error("Gagal mengambil data dashboard:", error);
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+server_smartcity/venv/
+*/server_smartcity/venv/
+
+# Django generated files
+db.sqlite3
+staticfiles/
+*/staticfiles/
+
+# Environment file
+.env

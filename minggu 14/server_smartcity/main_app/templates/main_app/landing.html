@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Smart City Tubaba{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">Home</li>
+    </ol>
+</nav>
+
+<section class="hero-panel p-4 p-lg-5 mb-4">
+    <div class="row align-items-center g-4 position-relative">
+        <div class="col-lg-8">
+            <span class="badge bg-light text-primary mb-3">
+                <i class="bi bi-building-check me-1"></i>
+                Citizen Reporting Portal
+            </span>
+            <h1 class="display-6 fw-bold mb-3">Smart City Reporting Kabupaten Tubaba</h1>
+            <p class="fs-5 mb-0 text-white-50">
+                Layanan pelaporan publik untuk memantau, menindaklanjuti, dan menyelesaikan laporan warga dengan lebih tertib.
+            </p>
+        </div>
+        <div class="col-lg-4">
+            <div class="bg-white text-dark p-3 rounded-4 shadow-sm">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="icon-chip bg-success-subtle text-success">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </span>
+                    <div>
+                        <div class="fw-bold">Portal Aktif</div>
+                        <div class="small text-muted">Backend Django dan laporan warga</div>
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'report_list' %}" class="btn btn-primary">
+                        <i class="bi bi-table me-1"></i> Lihat Laporan
+                    </a>
+                    <a href="{% url 'add_report' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Laporan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="icon-chip bg-primary-subtle text-primary mb-3">
+                    <i class="bi bi-inboxes"></i>
+                </span>
+                <h5 class="fw-bold">Pelaporan Terpusat</h5>
+                <p class="text-muted mb-0">Semua laporan warga tersimpan rapi untuk dipantau oleh admin dan pemilik laporan.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="icon-chip bg-success-subtle text-success mb-3">
+                    <i class="bi bi-arrow-repeat"></i>
+                </span>
+                <h5 class="fw-bold">Status Terkontrol</h5>
+                <p class="text-muted mb-0">Alur status membantu membedakan laporan draft, diproses, dan selesai.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="icon-chip bg-warning-subtle text-warning mb-3">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </span>
+                <h5 class="fw-bold">Dashboard Ringkas</h5>
+                <p class="text-muted mb-0">Data statistik tersedia untuk melihat distribusi laporan berdasarkan status dan kategori.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center text-muted mt-4">
+    2026 Smart City Reporting Kabupaten Tubaba
+</div>
+
+{% endblock %}
