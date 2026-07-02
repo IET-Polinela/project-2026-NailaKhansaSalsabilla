@@ -173,18 +173,13 @@ function renderDashboardPage() {
                             <i class="bi bi-shield-check me-2"></i>Mode Admin
                         </h4>
                         <p class="text-muted mb-0">
-                            Admin tidak dapat membuat laporan. Tab Laporan Saya dikosongkan, sedangkan laporan publik tampil pada Feed Kota (Publik).
+                            Admin hanya dapat melihat laporan publik yang sudah diajukan citizen. Draft tidak ditampilkan dan admin tidak dapat membuat, mengedit, atau menghapus laporan.
                         </p>
                     </div>
 
                     <ul class="nav content-tabs">
                         <li class="nav-item">
-                            <button id="myReportsTab" class="nav-link active" onclick="switchTab('my_reports')">
-                                <i class="bi bi-folder-fill me-2"></i>Laporan Saya
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button id="feedTab" class="nav-link" onclick="switchTab('feed')">
+                            <button id="feedTab" class="nav-link active" onclick="switchTab('feed')">
                                 <i class="bi bi-globe2 me-2"></i>Feed Kota (Publik)
                             </button>
                         </li>
@@ -193,7 +188,7 @@ function renderDashboardPage() {
                     <div id="reportList">
                         <div class="empty-box">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Memuat laporan...
+                            Memuat laporan publik...
                         </div>
                     </div>
 
@@ -268,6 +263,10 @@ function getProgressInfo(status) {
 }
 
 function switchTab(tab) {
+    if (isAdminAccountInSPA()) {
+        tab = "feed";
+    }
+
     currentTab = tab;
     currentPage = 1;
 
@@ -290,6 +289,10 @@ async function loadDashboardData(tab = currentTab, page = currentPage) {
 
     if (!reportList) {
         return;
+    }
+
+    if (isAdminAccountInSPA()) {
+        tab = "feed";
     }
 
     currentTab = tab;
@@ -335,12 +338,10 @@ function renderList(reports, tab) {
     const reportList = document.getElementById("reportList");
 
     if (reports.length === 0) {
-        if (isAdminAccountInSPA() && tab === "my_reports") {
+        if (isAdminAccountInSPA()) {
             reportList.innerHTML = `
                 <div class="empty-box">
-                    Laporan Saya kosong untuk akun admin.
-                    <br>
-                    Silakan buka tab Feed Kota (Publik) untuk melihat laporan citizen yang bukan draft.
+                    Belum ada laporan publik yang dapat ditampilkan untuk admin.
                 </div>
             `;
             return;
@@ -504,8 +505,14 @@ function openCreateModal() {
     const modalElement = document.getElementById("reportModal");
 
     editingReportId = null;
-    reportForm.reset();
-    reportModalTitle.textContent = "Tambah Laporan Baru";
+
+    if (reportForm) {
+        reportForm.reset();
+    }
+
+    if (reportModalTitle) {
+        reportModalTitle.textContent = "Tambah Laporan Baru";
+    }
 
     bootstrap.Modal.getOrCreateInstance(modalElement).show();
 }
@@ -562,7 +569,7 @@ async function submitModalForm(targetStatus) {
         return;
     }
 
-    const payload = getReportPayload(targetStatus);
+    const payload = getReportPayload("DRAFT");
     const method = editingReportId === null ? "POST" : "PUT";
     const endpoint = editingReportId === null ? "/api/report/" : `/api/report/${editingReportId}/`;
 
@@ -570,10 +577,24 @@ async function submitModalForm(targetStatus) {
         const response = await requestAPI(endpoint, method, payload);
 
         if (response.status === 201 || response.status === 200) {
+            const savedReport = response.data;
+            const savedReportId = savedReport.id || editingReportId;
+
+            if (targetStatus === "REPORTED" && savedReportId) {
+                await requestAPI(`/api/report/${savedReportId}/submit/`, "POST");
+            }
+
             bootstrap.Modal.getOrCreateInstance(document.getElementById("reportModal")).hide();
             reportForm.reset();
             editingReportId = null;
-            await loadDashboardData(currentTab, currentPage);
+
+            if (targetStatus === "REPORTED") {
+                currentTab = "feed";
+                await loadDashboardData("feed", 1);
+            } else {
+                currentTab = "my_reports";
+                await loadDashboardData("my_reports", 1);
+            }
         }
     } catch (error) {
         alert("Gagal menyimpan laporan. Pastikan data lengkap dan akun memiliki izin.");
@@ -606,13 +627,15 @@ function setupReportModalButtons() {
     const saveDraftButton = document.getElementById("saveDraftButton");
     const submitReportButton = document.getElementById("submitReportButton");
 
-    if (saveDraftButton) {
+    if (saveDraftButton && !saveDraftButton.dataset.listenerAttached) {
+        saveDraftButton.dataset.listenerAttached = "true";
         saveDraftButton.addEventListener("click", function () {
             submitModalForm("DRAFT");
         });
     }
 
-    if (submitReportButton) {
+    if (submitReportButton && !submitReportButton.dataset.listenerAttached) {
+        submitReportButton.dataset.listenerAttached = "true";
         submitReportButton.addEventListener("click", function () {
             submitModalForm("REPORTED");
         });
@@ -622,18 +645,45 @@ function setupReportModalButtons() {
 function handleRoute() {
     const appContent = document.getElementById("app-content");
 
-    if (window.location.hash !== "#dashboard") {
-        window.location.hash = "#dashboard";
+    if (!appContent) {
+        return;
+    }
+
+    const token = getAccessToken();
+    let hash = window.location.hash || "";
+
+    if (!token) {
+        if (hash !== "#login") {
+            history.replaceState(
+                null,
+                "",
+                window.location.pathname + window.location.search + "#login"
+            );
+            hash = "#login";
+        }
+
+        updateNavbar();
+        appContent.innerHTML = renderLoginPage();
+        setupLoginForm();
+        return;
+    }
+
+    if (hash !== "#dashboard") {
+        history.replaceState(
+            null,
+            "",
+            window.location.pathname + window.location.search + "#dashboard"
+        );
+        hash = "#dashboard";
     }
 
     updateNavbar();
+    appContent.innerHTML = renderDashboardPage();
 
-    if (getAccessToken()) {
-        appContent.innerHTML = renderDashboardPage();
-        loadDashboardData("my_reports", 1);
+    if (isAdminAccountInSPA()) {
+        loadDashboardData("feed", 1);
     } else {
-        appContent.innerHTML = renderLoginPage();
-        setupLoginForm();
+        loadDashboardData("my_reports", 1);
     }
 }
 

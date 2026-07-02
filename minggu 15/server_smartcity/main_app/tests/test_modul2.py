@@ -1,68 +1,123 @@
-from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
 
+from main_app.models import Report
+
 User = get_user_model()
 
 
-class AuthenticationTests(APITestCase):
+# =============================================================================
+# MODUL 2: PENGUJIAN VISIBILITAS DATA & PRIVASI PELAPOR
+# =============================================================================
+
+class PrivacyAndDataHidingTests(APITestCase):
     def setUp(self):
-        self.warga = User.objects.create_user(
-            username='warga_test',
-            password='Password123!',
-            is_admin=False,
-            is_staff=False,
-            is_member=True,
+        self.warga_a = User.objects.create_user(
+            username='warga_a',
+            password='TestPass123!',
+            is_admin=False
         )
 
-        self.admin = User.objects.create_user(
-            username='admin_test',
-            password='AdminPass123!',
-            is_admin=True,
-            is_staff=True,
-            is_member=False,
+        self.warga_b = User.objects.create_user(
+            username='warga_b',
+            password='TestPass123!',
+            is_admin=False
         )
 
-    def test_AUTH_01_login_warga_dengan_kredensial_valid(self):
-        # Arrange
-        url = reverse('token_obtain_pair')
-        payload = {
-            'username': 'warga_test',
-            'password': 'Password123!',
-        }
+        self.draft_milik_b = Report.objects.create(
+            title='Draf Rahasia Warga B',
+            category='Infrastruktur',
+            description='Ini adalah draf yang belum diajukan.',
+            location='Lokasi Rahasia',
+            status='DRAFT',
+            reporter=self.warga_b,
+        )
 
-        # Act
-        response = self.client.post(url, payload, format='json')
+        self.laporan_publik_a = Report.objects.create(
+            title='Jalan Berlubang di Depan Kampus',
+            category='Infrastruktur',
+            description='Ada lubang besar yang membahayakan pengendara.',
+            location='Jl. Soekarno Hatta',
+            status='REPORTED',
+            reporter=self.warga_a,
+        )
 
-        # Assert
+        self.laporan_publik_b = Report.objects.create(
+            title='Sampah Menumpuk di Trotoar',
+            category='Kebersihan',
+            description='Sampah tidak diangkut selama seminggu.',
+            location='Jl. Gatot Subroto',
+            status='REPORTED',
+            reporter=self.warga_b,
+        )
+
+    def _get_results(self, response):
+        if isinstance(response.data, dict) and 'results' in response.data:
+            return response.data['results']
+        return response.data
+
+    def test_PRIV_01_feed_kota_menyembunyikan_identitas_reporter(self):
+        self.client.force_authenticate(user=self.warga_a)
+
+        response = self.client.get('/api/report/?tab=feed&page_size=1000')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
 
-    def test_AUTH_02_login_warga_dengan_password_salah(self):
-        # Arrange
-        url = reverse('token_obtain_pair')
+        results = self._get_results(response)
+        self.assertTrue(len(results) > 0)
+
+        laporan_warga_b = [
+            laporan for laporan in results
+            if laporan['title'] == 'Sampah Menumpuk di Trotoar'
+        ]
+
+        self.assertEqual(len(laporan_warga_b), 1)
+        self.assertEqual(laporan_warga_b[0]['reporter'], 'Warga Anonim')
+        self.assertEqual(laporan_warga_b[0]['reporter_name'], 'Warga Anonim')
+
+    def test_PRIV_02_laporan_saya_menampilkan_nama_asli(self):
+        self.client.force_authenticate(user=self.warga_a)
+
+        response = self.client.get('/api/report/?tab=my_reports&page_size=1000')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        self.assertTrue(len(results) > 0)
+
+        for laporan in results:
+            self.assertEqual(laporan['reporter_name'], 'warga_a')
+            self.assertTrue(laporan['is_owner'])
+
+    def test_PRIV_03_tidak_bisa_baca_draf_orang_lain(self):
+        self.client.force_authenticate(user=self.warga_a)
+
+        response = self.client.get(f'/api/report/{self.draft_milik_b.pk}/')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_PRIV_04_tidak_bisa_modifikasi_draf_orang_lain(self):
+        self.client.force_authenticate(user=self.warga_a)
+
         payload = {
-            'username': 'warga_test',
-            'password': 'passwordSALAH',
+            'title': 'Draf Orang Lain Diubah',
+            'category': 'Infrastruktur',
+            'description': 'Percobaan mengubah draf orang lain.',
+            'location': 'Lokasi Baru',
+            'status': 'DRAFT',
         }
 
-        # Act
-        response = self.client.post(url, payload, format='json')
+        response = self.client.put(
+            f'/api/report/{self.draft_milik_b.pk}/',
+            payload,
+            format='json'
+        )
 
-        # Assert
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertNotIn('access', response.data)
-        self.assertNotIn('refresh', response.data)
+        self.draft_milik_b.refresh_from_db()
 
-    def test_AUTH_03_warga_tidak_bisa_akses_halaman_admin(self):
-        # Arrange
-        self.client.login(username='warga_test', password='Password123!')
-        url = reverse('dashboard')
-
-        # Act
-        response = self.client.get(url)
-
-        # Assert
-        self.assertIn(response.status_code, [status.HTTP_302_FOUND, status.HTTP_403_FORBIDDEN])
+        self.assertIn(response.status_code, [
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_404_NOT_FOUND
+        ])
+        self.assertEqual(self.draft_milik_b.title, 'Draf Rahasia Warga B')

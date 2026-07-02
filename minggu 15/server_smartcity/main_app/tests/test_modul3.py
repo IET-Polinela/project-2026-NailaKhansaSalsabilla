@@ -1,68 +1,139 @@
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
 
+from main_app.models import Report
+
 User = get_user_model()
 
 
-class AuthenticationTests(APITestCase):
+# =============================================================================
+# MODUL 3: PENGUJIAN ALUR KERJA & ATURAN BISNIS STATUS LAPORAN
+# =============================================================================
+
+class WorkflowStateTests(APITestCase):
     def setUp(self):
         self.warga = User.objects.create_user(
-            username='warga_test',
-            password='Password123!',
-            is_admin=False,
-            is_staff=False,
-            is_member=True,
+            username='warga_wf',
+            password='TestPass123!',
+            is_admin=False
         )
 
+        self.laporan_draft = Report.objects.create(
+            title='Lampu Kampus Mati',
+            category='Fasilitas Umum',
+            description='Lampu di depan gedung rektorat tidak menyala.',
+            location='Gedung Rektorat',
+            status='DRAFT',
+            reporter=self.warga,
+        )
+
+        self.laporan_reported = Report.objects.create(
+            title='Saluran Air Tersumbat',
+            category='Infrastruktur',
+            description='Saluran air di samping kantin tersumbat.',
+            location='Kantin Polinela',
+            status='REPORTED',
+            reporter=self.warga,
+        )
+
+        self.laporan_resolved = Report.objects.create(
+            title='AC Rusak di Lab',
+            category='Fasilitas Umum',
+            description='AC di Lab CPS 1 sudah diperbaiki.',
+            location='Lab CPS 1',
+            status='RESOLVED',
+            reporter=self.warga,
+        )
+
+    def test_WF_01_warga_mengajukan_draf_menjadi_reported(self):
+        self.client.force_authenticate(user=self.warga)
+
+        response = self.client.post(f'/api/report/{self.laporan_draft.pk}/submit/')
+
+        self.laporan_draft.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.laporan_draft.status, 'REPORTED')
+
+    def test_WF_02_tidak_bisa_edit_laporan_yang_sudah_reported(self):
+        self.client.force_authenticate(user=self.warga)
+
+        response = self.client.patch(
+            f'/api/report/{self.laporan_reported.pk}/',
+            {'title': 'Judul Reported Diubah'},
+            format='json'
+        )
+
+        self.laporan_reported.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.laporan_reported.title, 'Saluran Air Tersumbat')
+
+    def test_WF_05_laporan_resolved_tidak_bisa_diubah(self):
+        self.client.force_authenticate(user=self.warga)
+
+        response = self.client.patch(
+            f'/api/report/{self.laporan_resolved.pk}/',
+            {'description': 'Deskripsi resolved diubah'},
+            format='json'
+        )
+
+        self.laporan_resolved.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.laporan_resolved.description, 'AC di Lab CPS 1 sudah diperbaiki.')
+
+
+# =============================================================================
+# MODUL 3b: PENGUJIAN ADMIN PORTAL — TRANSISI STATUS
+# =============================================================================
+
+class AdminWorkflowTests(TestCase):
+    def setUp(self):
         self.admin = User.objects.create_user(
-            username='admin_test',
+            username='admin_portal',
             password='AdminPass123!',
             is_admin=True,
             is_staff=True,
-            is_member=False,
         )
 
-    def test_AUTH_01_login_warga_dengan_kredensial_valid(self):
-        # Arrange
-        url = reverse('token_obtain_pair')
-        payload = {
-            'username': 'warga_test',
-            'password': 'Password123!',
-        }
+        self.warga = User.objects.create_user(
+            username='warga_admin_wf',
+            password='TestPass123!',
+            is_admin=False
+        )
 
-        # Act
-        response = self.client.post(url, payload, format='json')
+        self.laporan_reported = Report.objects.create(
+            title='Jalan Rusak di Blok C',
+            category='Infrastruktur',
+            description='Jalan berlubang parah di area parkir Blok C.',
+            location='Blok C Polinela',
+            status='REPORTED',
+            reporter=self.warga,
+        )
 
-        # Assert
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+    def test_WF_03_admin_mengubah_status_reported_ke_verified(self):
+        self.client.login(username='admin_portal', password='AdminPass123!')
 
-    def test_AUTH_02_login_warga_dengan_password_salah(self):
-        # Arrange
-        url = reverse('token_obtain_pair')
-        payload = {
-            'username': 'warga_test',
-            'password': 'passwordSALAH',
-        }
+        response = self.client.post(
+            reverse('update_status', kwargs={'pk': self.laporan_reported.pk}),
+            {'status': 'VERIFIED'}
+        )
 
-        # Act
-        response = self.client.post(url, payload, format='json')
+        self.laporan_reported.refresh_from_db()
 
-        # Assert
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertNotIn('access', response.data)
-        self.assertNotIn('refresh', response.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('report_list'))
+        self.assertEqual(self.laporan_reported.status, 'VERIFIED')
 
-    def test_AUTH_03_warga_tidak_bisa_akses_halaman_admin(self):
-        # Arrange
-        self.client.login(username='warga_test', password='Password123!')
-        url = reverse('dashboard')
+    def test_WF_04_tidak_ada_transisi_langsung_ke_resolved_dari_reported(self):
+        self.client.login(username='admin_portal', password='AdminPass123!')
 
-        # Act
-        response = self.client.get(url)
+        response = self.client.get(reverse('report_list'))
 
-        # Assert
-        self.assertIn(response.status_code, [status.HTTP_302_FOUND, status.HTTP_403_FORBIDDEN])
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Verified')
+        self.assertNotContains(response, 'Resolved</button>')

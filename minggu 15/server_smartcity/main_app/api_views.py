@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
 from .models import Report
-from .serializers import ReportSerializer, ReportStatusSerializer
-from .permissions import IsCitizen, IsAdminOrOwnerAndDraft, is_admin_user
+from .serializers import ReportSerializer
+from .permissions import IsCitizen, is_admin_user
 
 
 NON_DRAFT_STATUSES = ['REPORTED', 'VERIFIED', 'IN_PROGRESS', 'RESOLVED']
@@ -27,95 +27,113 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        tab = self.request.query_params.get('tab')
         queryset = Report.objects.all().order_by('-updated_at')
 
         if not user.is_authenticated:
-            return Report.objects.none()
+            if tab == 'my_reports':
+                return Report.objects.none()
 
-        tab = self.request.query_params.get('tab')
+            return queryset.filter(status__in=NON_DRAFT_STATUSES)
 
-        # ADMIN
-        # Laporan Saya harus kosong.
-        # Feed Kota hanya menampilkan laporan non-draft.
         if is_admin_user(user):
             if tab == 'my_reports':
                 return Report.objects.none()
 
-            if tab == 'feed':
-                return queryset.exclude(status='DRAFT')
+            return queryset.filter(status__in=NON_DRAFT_STATUSES)
 
-            return queryset.exclude(status='DRAFT')
-
-        # CITIZEN
-        # Laporan Saya menampilkan laporan milik user tersebut.
-        # Feed Kota menampilkan laporan publik/non-draft.
         if tab == 'my_reports':
             return queryset.filter(reporter=user)
 
         if tab == 'feed':
-            return queryset.exclude(status='DRAFT')
+            return queryset.filter(status__in=NON_DRAFT_STATUSES)
 
         return queryset.filter(
             Q(status__in=NON_DRAFT_STATUSES) |
             Q(reporter=user, status='DRAFT')
         )
 
-    def get_serializer_class(self):
-        if self.action in ['update', 'partial_update'] and is_admin_user(self.request.user):
-            return ReportStatusSerializer
-
-        return ReportSerializer
-
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.IsAuthenticated(), IsCitizen()]
 
-        if self.action in ['update', 'partial_update']:
-            return [permissions.IsAuthenticated(), IsAdminOrOwnerAndDraft()]
+        if self.action in ['update', 'partial_update', 'submit']:
+            return [permissions.IsAuthenticated()]
 
-        return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        requested_status = self.request.data.get('status')
+        serializer.save(reporter=self.request.user, status='DRAFT')
 
-        if requested_status == 'REPORTED':
-            serializer.save(reporter=self.request.user, status='REPORTED')
-        else:
-            serializer.save(reporter=self.request.user, status='DRAFT')
+    def update(self, request, *args, **kwargs):
+        report = self.get_object()
 
-    def perform_update(self, serializer):
-        if is_admin_user(self.request.user):
-            requested_status = self.request.data.get('status')
+        if is_admin_user(request.user):
+            return Response(
+                {'detail': 'Admin tidak dapat mengedit laporan.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-            if requested_status == 'DRAFT':
-                serializer.save(status='REPORTED')
-            else:
-                serializer.save()
+        if report.reporter_id != request.user.id or report.status != 'DRAFT':
+            return Response(
+                {'detail': 'Citizen hanya dapat mengedit draft miliknya sendiri.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-            return
+        data = request.data.copy()
+        data['status'] = 'DRAFT'
 
-        requested_status = self.request.data.get('status')
+        serializer = self.get_serializer(report, data=data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(status='DRAFT')
 
-        if requested_status == 'REPORTED':
-            serializer.save(status='REPORTED')
-        else:
-            serializer.save(status='DRAFT')
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        report = self.get_object()
+
+        if is_admin_user(request.user):
+            return Response(
+                {'detail': 'Admin tidak dapat mengedit laporan.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if report.reporter_id != request.user.id or report.status != 'DRAFT':
+            return Response(
+                {'detail': 'Citizen hanya dapat mengedit draft miliknya sendiri.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        data = request.data.copy()
+        data['status'] = 'DRAFT'
+
+        serializer = self.get_serializer(report, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(status='DRAFT')
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(exclude=True)
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
         report = self.get_object()
 
+        if is_admin_user(request.user):
+            return Response(
+                {'detail': 'Admin tidak dapat mengirim draft citizen.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if report.reporter_id != request.user.id:
+            return Response(
+                {'detail': 'Anda hanya dapat mengirim draft milik sendiri.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         if report.status != 'DRAFT':
             return Response(
                 {'detail': 'Hanya laporan berstatus DRAFT yang dapat dikirim.'},
                 status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if report.reporter != request.user:
-            return Response(
-                {'detail': 'Anda hanya dapat mengirim draft milik sendiri.'},
-                status=status.HTTP_403_FORBIDDEN
             )
 
         report.status = 'REPORTED'

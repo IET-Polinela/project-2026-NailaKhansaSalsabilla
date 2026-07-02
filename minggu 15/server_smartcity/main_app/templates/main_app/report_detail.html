@@ -24,9 +24,7 @@ Informasi lengkap laporan masyarakat Kabupaten Tulang Bawang Barat.
                 <h2 class="h3 mb-3">{{ report.title }}</h2>
 
                 <div class="mb-3">
-                    {% if report.status == 'DRAFT' %}
-                        <span class="badge bg-dark">Draft</span>
-                    {% elif report.status == 'REPORTED' %}
+                    {% if report.status == 'REPORTED' %}
                         <span class="badge bg-secondary">Reported</span>
                     {% elif report.status == 'VERIFIED' %}
                         <span class="badge bg-info text-dark">Verified</span>
@@ -62,27 +60,13 @@ Informasi lengkap laporan masyarakat Kabupaten Tulang Bawang Barat.
                         <i class="bi bi-arrow-left me-1"></i> Kembali
                     </a>
 
-                    {% if user.is_authenticated and report.status == 'DRAFT' and report.reporter_id == user.id %}
-                        <a href="{% url 'update_report' report.pk %}" class="btn btn-warning">
-                            <i class="bi bi-pencil-square me-1"></i> Edit Draft
-                        </a>
-
-                        <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="REPORTED">
-                            <button type="submit" class="btn btn-success"
-                                    onclick="return confirm('Yakin ingin mengirim draft ini?')">
-                                <i class="bi bi-send me-1"></i> Kirim Draft
-                            </button>
-                        </form>
-                    {% endif %}
-
                     {% if user.is_authenticated and user.is_admin %}
                         {% if report.status == 'REPORTED' %}
                             <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="VERIFIED">
-                                <button type="submit" class="btn btn-info">
+                                <button type="submit" class="btn btn-info"
+                                        onclick="return confirm('Yakin ingin memverifikasi laporan ini?')">
                                     Verifikasi
                                 </button>
                             </form>
@@ -90,7 +74,8 @@ Informasi lengkap laporan masyarakat Kabupaten Tulang Bawang Barat.
                             <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="IN_PROGRESS">
-                                <button type="submit" class="btn btn-warning text-dark">
+                                <button type="submit" class="btn btn-warning text-dark"
+                                        onclick="return confirm('Yakin ingin memproses laporan ini?')">
                                     Proses
                                 </button>
                             </form>
@@ -98,7 +83,8 @@ Informasi lengkap laporan masyarakat Kabupaten Tulang Bawang Barat.
                             <form method="POST" action="{% url 'update_status' report.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="RESOLVED">
-                                <button type="submit" class="btn btn-success">
+                                <button type="submit" class="btn btn-success"
+                                        onclick="return confirm('Yakin ingin menyelesaikan laporan ini?')">
                                     Selesaikan
                                 </button>
                             </form>

@@ -8,6 +8,270 @@
 Platform pelaporan digital untuk mendukung pelayanan publik Kabupaten Tulang Bawang Barat.
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .tubaba-landing {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        min-height: 560px;
+        background:
+            radial-gradient(circle at 18% 15%, rgba(13, 110, 253, 0.20), transparent 30%),
+            radial-gradient(circle at 88% 20%, rgba(25, 135, 84, 0.22), transparent 32%),
+            linear-gradient(135deg, #07182d 0%, #0f4c81 45%, #087f8c 100%);
+        box-shadow: 0 30px 85px rgba(15, 23, 42, 0.32);
+        color: white;
+    }
+
+    .tubaba-landing::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(rgba(255,255,255,0.055) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.055) 1px, transparent 1px);
+        background-size: 44px 44px;
+        opacity: 0.9;
+        pointer-events: none;
+    }
+
+    .tubaba-landing::after {
+        content: "";
+        position: absolute;
+        width: 480px;
+        height: 480px;
+        right: -130px;
+        top: -120px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.10);
+        pointer-events: none;
+    }
+
+    .tubaba-content {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 40px;
+        align-items: center;
+        min-height: 560px;
+        padding: 56px;
+    }
+
+    .tubaba-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.13);
+        border: 1px solid rgba(255,255,255,0.22);
+        backdrop-filter: blur(12px);
+        font-weight: 900;
+        letter-spacing: 0.8px;
+        margin-bottom: 22px;
+    }
+
+    .tubaba-title {
+        font-size: clamp(2.4rem, 5vw, 4.7rem);
+        line-height: 1.05;
+        font-weight: 950;
+        margin-bottom: 22px;
+        text-shadow: 0 14px 35px rgba(0,0,0,0.42);
+    }
+
+    .tubaba-text {
+        font-size: 1.12rem;
+        line-height: 1.85;
+        color: rgba(255,255,255,0.92);
+        max-width: 680px;
+        margin-bottom: 30px;
+        text-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+
+    .btn-tubaba-main {
+        border: 0;
+        border-radius: 999px;
+        padding: 15px 26px;
+        font-weight: 950;
+        color: white;
+        background: linear-gradient(135deg, #0d6efd, #00a6c7);
+        box-shadow: 0 18px 42px rgba(13, 110, 253, 0.42);
+        transition: 0.25s ease;
+    }
+
+    .btn-tubaba-main:hover {
+        color: white;
+        transform: translateY(-4px);
+        box-shadow: 0 26px 58px rgba(13, 110, 253, 0.52);
+    }
+
+    .tubaba-note {
+        margin-top: 28px;
+        padding: 18px 20px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.13);
+        border: 1px solid rgba(255,255,255,0.20);
+        backdrop-filter: blur(12px);
+        color: rgba(255,255,255,0.92);
+        max-width: 680px;
+    }
+
+    .tubaba-visual {
+        position: relative;
+        min-height: 470px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .city-orbit {
+        position: absolute;
+        width: 440px;
+        height: 440px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.18);
+        animation: rotateOrbit 18s linear infinite;
+    }
+
+    .city-orbit::before,
+    .city-orbit::after {
+        content: "";
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #8ee7ff;
+        box-shadow: 0 0 22px #8ee7ff;
+    }
+
+    .city-orbit::before {
+        top: 58px;
+        right: 68px;
+    }
+
+    .city-orbit::after {
+        left: 48px;
+        bottom: 84px;
+    }
+
+    @keyframes rotateOrbit {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .tower-card {
+        position: relative;
+        width: min(470px, 100%);
+        padding: 24px;
+        border-radius: 28px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.22);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 28px 70px rgba(0,0,0,0.30);
+        animation: floatTower 4.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatTower {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(-14px);
+        }
+    }
+
+    .tower-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 24px 28px rgba(0,0,0,0.32));
+    }
+
+    .visual-caption {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.88);
+        color: #0f172a;
+        font-weight: 900;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+        white-space: nowrap;
+    }
+
+    .mini-stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 26px;
+    }
+
+    .mini-stat {
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(10px);
+    }
+
+    .mini-stat strong {
+        display: block;
+        font-size: 1.4rem;
+        font-weight: 950;
+    }
+
+    .mini-stat span {
+        color: rgba(255,255,255,0.78);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 992px) {
+        .tubaba-content {
+            grid-template-columns: 1fr;
+            padding: 42px 28px;
+        }
+
+        .tubaba-visual {
+            min-height: 420px;
+        }
+
+        .city-orbit {
+            width: 360px;
+            height: 360px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .tubaba-content {
+            padding: 34px 22px;
+        }
+
+        .tubaba-title {
+            font-size: 2.35rem;
+        }
+
+        .tubaba-text {
+            font-size: 1rem;
+        }
+
+        .mini-stat-row {
+            grid-template-columns: 1fr;
+        }
+
+        .visual-caption {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
@@ -17,31 +281,134 @@ Platform pelaporan digital untuk mendukung pelayanan publik Kabupaten Tulang Baw
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="display-6 fw-bold mb-3">Kabupaten Tulang Bawang Barat</h2>
-                <p class="lead text-muted mb-4">
-                    Smart City Tubaba merupakan aplikasi pelaporan masalah masyarakat yang dirancang
-                    untuk membantu warga menyampaikan keluhan dan mendukung pelayanan publik yang
-                    lebih cepat, rapi, dan transparan.
-                </p>
-                <p class="mb-4">
-                    Aplikasi ini menjadi sarana digital untuk mencatat berbagai permasalahan
-                    masyarakat di wilayah Kabupaten Tulang Bawang Barat secara lebih terstruktur.
-                </p>
+<section class="tubaba-landing">
+    <div class="tubaba-content">
+        <div>
+            <div class="tubaba-badge">
+                <i class="bi bi-broadcast-pin"></i>
+                TUBABA SMART CITY
+            </div>
 
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{% url 'report_list' %}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-clipboard-data me-1"></i> Lihat Daftar Laporan
-                    </a>
-                    <a href="{% url 'add_report' %}" class="btn btn-success btn-lg">
-                        <i class="bi bi-plus-circle me-1"></i> Buat Laporan
-                    </a>
+            <h1 class="tubaba-title">
+                Smart City<br>
+                Tubaba
+            </h1>
+
+            <p class="tubaba-text">
+                Platform pelaporan digital untuk membantu masyarakat menyampaikan masalah,
+                memantau laporan publik, dan mendukung pelayanan Kabupaten Tulang Bawang Barat
+                yang lebih cepat, rapi, dan transparan.
+            </p>
+
+            <a href="{% url 'report_list' %}" class="btn btn-tubaba-main">
+                <i class="bi bi-clipboard-data me-2"></i>
+                Lihat Daftar Laporan
+            </a>
+
+            <div class="tubaba-note">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                Pembuatan laporan dilakukan melalui frontend Citizen Portal. Backend digunakan
+                untuk melihat laporan publik dan pengelolaan status oleh admin.
+            </div>
+
+            <div class="mini-stat-row">
+                <div class="mini-stat">
+                    <strong>24/7</strong>
+                    <span>Akses laporan</span>
+                </div>
+
+                <div class="mini-stat">
+                    <strong>Real</strong>
+                    <span>Pantau status</span>
+                </div>
+
+                <div class="mini-stat">
+                    <strong>Digital</strong>
+                    <span>Pelayanan publik</span>
                 </div>
             </div>
         </div>
+
+        <div class="tubaba-visual">
+            <div class="city-orbit"></div>
+
+            <div class="tower-card">
+                <svg class="tower-svg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="skyGlow" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#dff9ff"/>
+                            <stop offset="45%" stop-color="#73d9f4"/>
+                            <stop offset="100%" stop-color="#0f4c81"/>
+                        </linearGradient>
+
+                        <linearGradient id="towerGlass" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#f8fdff"/>
+                            <stop offset="45%" stop-color="#b8e7f7"/>
+                            <stop offset="100%" stop-color="#3d86a6"/>
+                        </linearGradient>
+
+                        <linearGradient id="towerSide" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#b6d8e6"/>
+                            <stop offset="100%" stop-color="#1e5f7d"/>
+                        </linearGradient>
+
+                        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#001627" flood-opacity="0.45"/>
+                        </filter>
+                    </defs>
+
+                    <circle cx="260" cy="260" r="230" fill="url(#skyGlow)" opacity="0.23"/>
+
+                    <g opacity="0.85">
+                        <path d="M65 355 C130 325, 170 390, 245 350 C325 305, 380 355, 455 320" fill="none" stroke="#9df3ff" stroke-width="3"/>
+                        <path d="M80 392 C145 360, 210 408, 275 372 C340 335, 398 385, 455 350" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.48"/>
+                    </g>
+
+                    <g filter="url(#softShadow)">
+                        <path d="M245 58 L348 392 L150 392 Z" fill="url(#towerGlass)" stroke="#ffffff" stroke-width="4"/>
+                        <path d="M245 58 L348 392 L302 392 L245 58 Z" fill="url(#towerSide)" opacity="0.55"/>
+
+                        <path d="M213 154 L291 154" stroke="#ffffff" stroke-width="3" opacity="0.65"/>
+                        <path d="M196 214 L309 214" stroke="#ffffff" stroke-width="3" opacity="0.60"/>
+                        <path d="M178 274 L327 274" stroke="#ffffff" stroke-width="3" opacity="0.55"/>
+                        <path d="M162 334 L343 334" stroke="#ffffff" stroke-width="3" opacity="0.50"/>
+
+                        <path d="M235 95 L176 392" stroke="#ffffff" stroke-width="2" opacity="0.42"/>
+                        <path d="M262 117 L306 392" stroke="#ffffff" stroke-width="2" opacity="0.34"/>
+                        <path d="M290 200 L332 392" stroke="#ffffff" stroke-width="2" opacity="0.30"/>
+
+                        <rect x="129" y="392" width="240" height="34" rx="9" fill="#e8f8ff" stroke="#ffffff" stroke-width="4"/>
+                        <rect x="101" y="424" width="298" height="34" rx="10" fill="#0f4c81" opacity="0.92"/>
+                    </g>
+
+                    <g>
+                        <path d="M245 58 L245 30" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M247 32 L284 45 L247 58 Z" fill="#ff3b3b"/>
+                    </g>
+
+                    <g opacity="0.95">
+                        <rect x="55" y="403" width="75" height="55" rx="6" fill="#1e6f50"/>
+                        <path d="M55 403 L92 370 L130 403 Z" fill="#49c23c"/>
+                        <rect x="385" y="405" width="78" height="55" rx="6" fill="#1e6f50"/>
+                        <path d="M385 405 L424 372 L463 405 Z" fill="#49c23c"/>
+                    </g>
+
+                    <g opacity="0.8">
+                        <circle cx="88" cy="106" r="5" fill="#ffffff"/>
+                        <circle cx="130" cy="80" r="4" fill="#ffffff"/>
+                        <circle cx="414" cy="105" r="5" fill="#ffffff"/>
+                        <circle cx="446" cy="154" r="4" fill="#ffffff"/>
+                        <path d="M88 106 L130 80 L190 108" stroke="#ffffff" stroke-width="2" opacity="0.42" fill="none"/>
+                        <path d="M414 105 L446 154 L397 184" stroke="#ffffff" stroke-width="2" opacity="0.42" fill="none"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="visual-caption">
+                <i class="bi bi-buildings-fill me-1"></i>
+                Ikon Menara Tubaba Digital
+            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}
